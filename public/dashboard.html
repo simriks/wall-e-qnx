@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freenove Rover Dashboard</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loading-content">
+            <div class="spinner">
+                <div class="double-bounce1"></div>
+                <div class="double-bounce2"></div>
+            </div>
+            <h2>Connecting to Rover...</h2>
+            <p id="loading-message">Establishing connection to Freenove Rover</p>
+            <div id="connection-status" class="status-disconnected">
+                <span id="connection-status-text">Disconnected</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Content -->
+    <div id="dashboard-content" style="display: none;">
+        <!-- Top Header -->
+        <header class="topbar">
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>Freenove Rover Control</h1>
+                    <p class="subtitle">Real-time Monitoring & Control</p>
+                </div>
+            </div>
+            <div class="actions">
+                <div class="connection-indicator">
+                    <span class="indicator-dot" id="connection-dot"></span>
+                    <span id="connection-text">Connecting...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Grid Layout -->
+        <main class="layout-grid">
+            <!-- Left Panel: Status & Detection -->
+            <aside class="left-panel">
+                <!-- System Status -->
+                <section class="card status-panel">
+                    <h2><i class="fas fa-robot"></i> Rover Status</h2>
+                    <div class="status-grid">
+                        <div class="status-item">
+                            <span class="status-label">Mode:</span>
+                            <span class="status-value robo-mode">STANDBY</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Battery:</span>
+                            <div class="battery-display">
+                                <span class="battery-level">--%</span>
+                                <div class="battery-indicator">
+                                    <div class="battery-fill" style="width: 0%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Speed:</span>
+                            <span class="status-value robo-speed">0 m/s</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Direction:</span>
+                            <span class="status-value robo-direction">STOPPED</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Temperature:</span>
+                            <span class="status-value robo-temp">--°C</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Distance:</span>
+                            <span class="status-value robo-distance">-- cm</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Detection Summary -->
+                <section class="card detection-summary">
+                    <h2><i class="fas fa-eye"></i> Detection Summary</h2>
+                    <div class="detection-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Objects:</span>
+                            <span class="stat-value" id="detection-objects">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Threat Level:</span>
+                            <span class="stat-value" id="threat-level">SAFE</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Obstacles:</span>
+                            <span class="stat-value obstacle-count">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Action:</span>
+                            <span class="stat-value current-action">STANDBY</span>
+                        </div>
+                    </div>
+                </section>
+            </aside>
+
+            <!-- Center: Camera Feeds -->
+            <section class="camera-feeds">
+                <!-- Detection Stream -->
+                <div class="camera-feed card detection-feed">
+                    <div class="camera-header">
+                        <h2><i class="fas fa-robot"></i> AI Detection Feed</h2>
+                        <div class="camera-stats">
+                            <span class="stat"><i class="fas fa-eye"></i> <span id="detection-count">0</span> Objects</span>
+                            <span class="stat"><i class="fas fa-shield-alt"></i> <span id="safety-status">Safe</span></span>
+                        </div>
+                    </div>
+                    <div class="video-container detection-video">
+                        <img src="" alt="AI Detection Feed" id="detection-stream" class="camera-stream"/>
+                        <div class="crosshair"></div>
+                        <div class="stream-status" id="detection-status">Starting...</div>
+                    </div>
+                </div>
+
+                <!-- Regular Camera Stream -->
+                <div class="camera-feed card regular-feed">
+                    <div class="camera-header">
+                        <h2><i class="fas fa-video"></i> Live Camera Feed</h2>
+                        <div class="camera-stats">
+                            <span class="stat"><i class="fas fa-tachometer-alt"></i> Live</span>
+                            <span class="stat"><i class="fas fa-wifi"></i> <span id="stream-quality">HD</span></span>
+                        </div>
+                    </div>
+                    <div class="video-container regular-video">
+                        <img src="" alt="Live Camera Feed" id="camera-stream" class="camera-stream"/>
+                        <div class="crosshair"></div>
+                        <div class="stream-status" id="camera-status">Starting...</div>
+                    </div>
+                </div>
+
+                <!-- Camera Controls -->
+                <div class="camera-controls-shared">
+                    <button class="btn btn-danger" id="stop-streams">
+                        <i class="fas fa-stop"></i> Stop Streams
+                    </button>
+                    <div class="stream-info">
+                        <span class="info-item">Detection: <span id="detection-info">Active</span></span>
+                        <span class="info-item">Live Feed: <span id="camera-info">Active</span></span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Obstacle Avoidance & Logs -->
+            <aside class="right-panel">
+                <!-- Obstacle Avoidance Panel -->
+                <section class="card obstacle-avoidance-panel">
+                    <div class="obstacle-header">
+                        <h2><i class="fas fa-shield-alt"></i> Obstacle Avoidance</h2>
+                        <div class="obstacle-status-row">
+                            <div id="ultrasonicStatus" class="status-chip">📡 Ultrasonic: --</div>
+                            <div id="avoidanceMode" class="status-chip">🎮 Manual</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Distance Display -->
+                    <div class="distance-display">
+                        <div class="distance-meter">
+                            <div class="distance-value">
+                                <span id="currentDistance">--</span>
+                                <span class="unit">cm</span>
+                            </div>
+                            <div class="distance-bar">
+                                <div id="distanceBar" class="bar-fill"></div>
+                            </div>
+                        </div>
+                        <div id="obstacleWarning" class="obstacle-warning hidden">⚠️ OBSTACLE DETECTED</div>
+                    </div>
+
+                    <!-- Control Buttons -->
+                    <div class="obstacle-controls">
+                        <button id="toggleAutoAvoid" class="btn btn-sm obstacle-btn auto-avoid-off">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Auto-Avoid OFF</span>
+                        </button>
+                        <button id="scanPathBtn" class="btn btn-sm obstacle-btn scan-btn">
+                            <i class="fas fa-radar-chart"></i>
+                            <span>Scan Path</span>
+                        </button>
+                        <button id="checkObstaclesBtn" class="btn btn-sm obstacle-btn check-btn">
+                            <i class="fas fa-eye"></i>
+                            <span>Check Now</span>
+                        </button>
+                    </div>
+
+                    <!-- Scan Results -->
+                    <div id="scanResults" class="scan-results hidden">
+                        <h4>🔍 Path Scan Results:</h4>
+                        <div class="scan-directions">
+                            <div class="scan-direction">
+                                <span class="direction-label">⬅️ Left</span>
+                                <span id="scanLeft" class="direction-value">--</span>
+                            </div>
+                            <div class="scan-direction">
+                                <span class="direction-label">⬆️ Center</span>
+                                <span id="scanCenter" class="direction-value">--</span>
+                            </div>
+                            <div class="scan-direction">
+                                <span class="direction-label">➡️ Right</span>
+                                <span id="scanRight" class="direction-value">--</span>
+                            </div>
+                        </div>
+                        <div class="best-direction">
+                            🎯 Best Path: <span id="recommendedDirection">--</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- System Logs -->
+                <section class="card logs-panel">
+                    <div class="log-header">
+                        <h2><i class="fas fa-terminal"></i> System Logs</h2>
+                        <button class="btn btn-sm btn-ghost" id="clear-logs">
+                            <i class="fas fa-trash"></i> Clear
+                        </button>
+                    </div>
+                    <div class="log-container" id="system-logs">
+                        <!-- Logs will be added here by JavaScript -->
+                    </div>
+                </section>
+            </aside>
+        </main>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <div class="footer-content">
+                <div class="footer-left">
+                    <span>Freenove Rover Dashboard v2.0</span>
+                </div>
+                <div class="footer-right">
+                    <span>Uptime: <span id="uptime-counter">00:00:00</span></span>
+                    <span>Status: <span id="system-status">Online</span></span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="dashboard.js"></script>
+    
+    <!-- Initialize Dashboard -->
+    <script>
+        // Update uptime counter
+        let uptimeSeconds = 0;
+        setInterval(() => {
+            uptimeSeconds++;
+            const hours = Math.floor(uptimeSeconds / 3600).toString().padStart(2, '0');
+            const minutes = Math.floor((uptimeSeconds % 3600) / 60).toString().padStart(2, '0');
+            const secs = (uptimeSeconds % 60).toString().padStart(2, '0');
+            const uptimeEl = document.getElementById('uptime-counter');
+            if (uptimeEl) uptimeEl.textContent = `${hours}:${minutes}:${secs}`;
+        }, 1000);
+
+        // Clear logs functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            const clearBtn = document.getElementById('clear-logs');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', () => {
+                    const logs = document.getElementById('system-logs');
+                    if (logs) {
+                        logs.innerHTML = '';
+                        if (window.roverDashboard) {
+                            window.roverDashboard.addLog('Logs cleared', 'info');
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
